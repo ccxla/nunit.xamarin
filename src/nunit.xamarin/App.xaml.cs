@@ -39,8 +39,9 @@ namespace NUnit.Runner
 
         /// <summary>
         /// Constructs a new app adding the current assembly to be tested
+        /// <param name="options">An optional dictionary of options for loading the assembly.</param>
         /// </summary>
-		public App ()
+		public App(Dictionary<string, object> options = null)
 		{
             InitializeComponent ();
 
@@ -52,7 +53,7 @@ namespace NUnit.Runner
             _model = new SummaryViewModel();
             MainPage = new NavigationPage(new SummaryView(_model));
 #if !NETFX_CORE
-            AddTestAssembly(Assembly.GetCallingAssembly());
+            AddTestAssembly(Assembly.GetCallingAssembly(), options);
 #endif
         }
 
