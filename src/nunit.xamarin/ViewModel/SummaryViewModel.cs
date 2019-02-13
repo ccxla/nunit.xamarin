@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -157,14 +158,7 @@ namespace NUnit.Runner.ViewModel
 
         public static void TerminateWithSuccess()
         {
-#if __IOS__
-            var selector = new ObjCRuntime.Selector("terminateWithSuccess");
-            UIKit.UIApplication.SharedApplication.PerformSelector(selector, UIKit.UIApplication.SharedApplication, 0);
-#elif __DROID__
-            System.Environment.Exit(0);
-#elif WINDOWS_UWP
-            Windows.UI.Xaml.Application.Current.Exit();
-#endif
+            Environment.Exit(0);
         }
     }
 }
