@@ -59,7 +59,7 @@ namespace NUnit.Runner.ViewModel
                 foreach (var childResult in result.Children)
                     AddTestResults(childResult, viewAll);
             }
-            else if (viewAll || result.ResultState.Status != TestStatus.Passed)
+            else if (viewAll || (result.ResultState.Status != TestStatus.Passed && result.ResultState.Status != TestStatus.Skipped))
             {
                 Results.Add(new ResultViewModel(result));
             }
