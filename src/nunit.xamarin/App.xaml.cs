@@ -27,6 +27,8 @@ using NUnit.Runner.Services;
 using NUnit.Runner.View;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
+using System.ComponentModel;
+using System.Linq;
 
 namespace NUnit.Runner
 {
@@ -42,19 +44,19 @@ namespace NUnit.Runner
         /// <param name="options">An optional dictionary of options for loading the assembly.</param>
         /// </summary>
 		public App(Dictionary<string, object> options = null)
-		{
-            InitializeComponent ();
+        {
+            InitializeComponent();
 
-            if(Device.RuntimePlatform == Device.UWP)
+            if (Device.RuntimePlatform == Device.UWP)
             {
                 Resources["defaultBackground"] = Resources["windowsBackground"];
             }
 
             _model = new SummaryViewModel();
             MainPage = new NavigationPage(new SummaryView(_model));
-#if !NETFX_CORE
-            AddTestAssembly(Assembly.GetCallingAssembly(), options);
-#endif
+
+            UpdateTestAssemblies(options);
+            _model.PropertyChanged += OnPropertyChanged;
         }
 
         /// <summary>
@@ -67,13 +69,55 @@ namespace NUnit.Runner
             _model.AddTest(testAssembly, options);
         }
 
+        protected void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Options))
+                UpdateTestAssemblies(Options.ToDictionary());
+        }
+
         /// <summary>
         /// User options for the test suite.
         /// </summary>
         public TestOptions Options
         {
-            get { return _model.Options; }
-            set { _model.Options = value; }
+            get => _model.Options;
+            set => _model.Options = value;
+        }
+
+        /// <summary>
+        /// Start running the tests with the given filter
+        /// </summary>
+        public bool RunTests(Dictionary<string,string> parameters)
+        {
+            if (_model == null)
+                return false;
+
+            if (!_model.RunTestsCommand.CanExecute(this))
+                return false;
+
+            _model.Options = new TestOptions
+            {
+                AutoRun = _model.Options.AutoRun,
+                CreateXmlResultFile = _model.Options.CreateXmlResultFile,
+                ResultFilePath = _model.Options.ResultFilePath,
+                TcpWriterParameters = _model.Options.TcpWriterParameters,
+                TerminateAfterExecution = _model.Options.TerminateAfterExecution,
+
+                CustomParameters = parameters
+            };
+
+            UpdateTestAssemblies(_model.Options.ToDictionary());
+
+            _model.RunTestsCommand.Execute(this);
+
+            return true;
+        }
+
+        private void UpdateTestAssemblies(Dictionary<string, object> options)
+        {
+            _model.ClearTests();
+
+            _model.AddTest(Assembly.GetEntryAssembly(), options);
         }
     }
 }

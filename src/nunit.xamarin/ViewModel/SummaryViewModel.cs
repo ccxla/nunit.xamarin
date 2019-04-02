@@ -71,6 +71,7 @@ namespace NUnit.Runner.ViewModel
             set
             {
                 options = value;
+                OnPropertyChanged(nameof(Options));
             }
         }
 
@@ -133,6 +134,14 @@ namespace NUnit.Runner.ViewModel
         internal void AddTest(Assembly testAssembly, Dictionary<string, object> options = null)
         {
             _testPackage.AddAssembly(testAssembly, options);
+        }
+
+        /// <summary>
+        /// Clear test assemblies
+        /// </summary>
+        internal void ClearTests()
+        {
+            _testPackage.ClearAssemblies();
         }
 
         async Task ExecuteTestsAync()

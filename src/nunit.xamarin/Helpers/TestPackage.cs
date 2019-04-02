@@ -42,6 +42,11 @@ namespace NUnit.Runner.Helpers
             _testAssemblies.Add( (testAssembly, options) );
         }
 
+        public void ClearAssemblies()
+        {
+            _testAssemblies.Clear();
+        }
+
         public async Task<TestRunResult> ExecuteTests()
         {
             var resultPackage = new TestRunResult();

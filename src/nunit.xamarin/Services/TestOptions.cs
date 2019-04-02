@@ -22,6 +22,7 @@
 // ***********************************************************************
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace NUnit.Runner.Services
@@ -32,6 +33,7 @@ namespace NUnit.Runner.Services
     public class TestOptions
     {
         const string OutputXmlReportName = "TestResults.xml";
+        public Dictionary<string, string> CustomParameters { get; protected internal set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Constructor
@@ -69,5 +71,18 @@ namespace NUnit.Runner.Services
         /// Default is [LocalStorage]/TestResults.xml
         /// </summary>
         public string ResultFilePath { get; set; }
+
+        internal Dictionary<string, object> ToDictionary()
+        {
+            return new Dictionary<string, object>
+            {
+                { nameof(AutoRun), AutoRun },
+                { nameof(TerminateAfterExecution), TerminateAfterExecution },
+                { nameof(TcpWriterParameters), TcpWriterParameters },
+                { nameof(CreateXmlResultFile), CreateXmlResultFile },
+                { nameof(ResultFilePath), ResultFilePath },
+                { FrameworkPackageSettings.TestParametersDictionary, CustomParameters }
+            };
+        }
     }
 }
