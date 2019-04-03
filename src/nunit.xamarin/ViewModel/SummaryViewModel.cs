@@ -54,7 +54,7 @@ namespace NUnit.Runner.ViewModel
                 o => !HasResults);
         }
 
-        private TestOptions options;
+        private TestOptions _options;
 
         /// <summary>
         /// User options for the test suite.
@@ -62,15 +62,15 @@ namespace NUnit.Runner.ViewModel
         public TestOptions Options {
             get
             {
-                if(options == null)
+                if(_options == null)
                 {
-                    options = new TestOptions();
+                    _options = new TestOptions();
                 }
-                return options;
+                return _options;
             }
             set
             {
-                options = value;
+                _options = value;
                 OnPropertyChanged(nameof(Options));
             }
         }
@@ -99,7 +99,7 @@ namespace NUnit.Runner.ViewModel
                 if (Equals(value, _results)) return;
                 _results = value;
                 OnPropertyChanged();
-                OnPropertyChanged("HasResults");
+                OnPropertyChanged(nameof(HasResults));
             }
         }
 
