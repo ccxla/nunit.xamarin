@@ -34,14 +34,14 @@ namespace NUnit.Runner.Services
         public XmlFileProcessor(TestOptions options)
             : base(options) { }
 
-        public override async Task Process(ResultSummary result)
+        public override async Task Process(ResultSummary testResult)
         {
             if (Options.CreateXmlResultFile == false)
                 return;
 
             try
             {
-                await WriteXmlResultFile(result).ConfigureAwait(false);
+                WriteXmlResultFile(testResult);
             }
             catch (Exception)
             {
@@ -51,11 +51,11 @@ namespace NUnit.Runner.Services
 
             if (Successor != null)
             {
-                await Successor.Process(result).ConfigureAwait(false);
+                await Successor.Process(testResult).ConfigureAwait(false);
             }
         }
 
-        async Task WriteXmlResultFile(ResultSummary result)
+        private void WriteXmlResultFile(ResultSummary result)
         {
             string outputFolderName = Path.GetDirectoryName(Options.ResultFilePath);
 
@@ -63,8 +63,8 @@ namespace NUnit.Runner.Services
 
             using (var resultFileStream = new StreamWriter(Options.ResultFilePath, false))
             {
-                var xml = result.GetTestXml().ToString();
-                await resultFileStream.WriteAsync(xml);
+                var xml = result.GetTestXml();
+                xml.Save(resultFileStream);
             }
         }
     }
