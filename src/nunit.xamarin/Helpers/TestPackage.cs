@@ -21,12 +21,17 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using nunit.xamarin.Helpers;
+using NUnit.Framework;
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
+using NUnit.Runner.Services;
 
 namespace NUnit.Runner.Helpers
 {
@@ -35,11 +40,11 @@ namespace NUnit.Runner.Helpers
     /// </summary>
     internal class TestPackage
     {
-        private readonly List<(Assembly, Dictionary<string,object>)> _testAssemblies = new List<(Assembly, Dictionary<string,object>)>();
+        private readonly List<(Assembly, Dictionary<string, object>)> _testAssemblies = new List<(Assembly, Dictionary<string, object>)>();
 
-        public void AddAssembly(Assembly testAssembly, Dictionary<string,object> options = null)
+        public void AddAssembly(Assembly testAssembly, Dictionary<string, object> options = null)
         {
-            _testAssemblies.Add( (testAssembly, options) );
+            _testAssemblies.Add((testAssembly, options));
         }
 
         public void ClearAssemblies()
@@ -51,12 +56,47 @@ namespace NUnit.Runner.Helpers
         {
             var resultPackage = new TestRunResult();
 
-            foreach (var (assembly,options) in _testAssemblies)
+            foreach (var (assembly, options) in _testAssemblies)
             {
-                NUnitTestAssemblyRunner runner = await LoadTestAssemblyAsync(assembly, options).ConfigureAwait(false);
-                ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty)).ConfigureAwait(false);
+                var runner = await LoadTestAssemblyAsync(assembly, options).ConfigureAwait(false);
+                var testCaseCount = runner.CountTestCases(TestFilter.Empty);
+                var testNames = new HashSet<string>();
+
+                foreach (var type in assembly.GetTypes())
+                {
+                    foreach (var methodInfo in type.GetMethods())
+                    {
+                        var attributes = methodInfo.GetCustomAttributes(true);
+                        foreach (var attr in attributes)
+                        {
+                            if (attr is NUnitAttribute)
+                            {
+                                var methodName = methodInfo.Name;
+                                testNames.Add(methodName);
+                            }
+                        }
+                    }
+                }
+
+
+                var partitionCount = (int)options[nameof(TestOptions.TotalPartitionCount)];
+                var partitionIndex = (int)options[nameof(TestOptions.PartitionIndex)];
+
+                Assert.That(testCaseCount, Is.GreaterThanOrEqualTo(testNames.Count));
+                Assert.That(partitionIndex, Is.LessThan(partitionCount).And.GreaterThanOrEqualTo(0));
+
+                var filter = partitionCount > 1 ?
+                        new PartitionTestFilter(
+                            testNames,
+                            partitionIndex,
+                            partitionCount,
+                            (int)options[nameof(TestOptions.PartitionRandomizerSeed)])
+                        : TestFilter.Empty;
+
+                var result = await Task.Run(() => runner.Run(TestListener.NULL, filter)).ConfigureAwait(false);
                 resultPackage.AddResult(result);
             }
+
             resultPackage.CompleteTestRun();
             return resultPackage;
         }

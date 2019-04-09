@@ -44,6 +44,22 @@ namespace NUnit.Runner.Services
             ResultFilePath = Path.Combine(path, OutputXmlReportName);
         }
 
+        internal Dictionary<string, object> ToDictionary()
+        {
+            return new Dictionary<string, object>
+            {
+                { nameof(AutoRun), AutoRun },
+                { nameof(TerminateAfterExecution), TerminateAfterExecution },
+                { nameof(TcpWriterParameters), TcpWriterParameters },
+                { nameof(CreateXmlResultFile), CreateXmlResultFile },
+                { nameof(ResultFilePath), ResultFilePath },
+                { nameof(PartitionIndex), PartitionIndex },
+                { nameof(TotalPartitionCount), TotalPartitionCount },
+                { nameof(PartitionRandomizerSeed), PartitionRandomizerSeed },
+                { FrameworkPackageSettings.TestParametersDictionary, CustomParameters }
+            };
+        }
+
         /// <summary>
         /// If True, the tests will run automatically when the app starts
         /// otherwise you must run them manually.
@@ -72,17 +88,22 @@ namespace NUnit.Runner.Services
         /// </summary>
         public string ResultFilePath { get; set; }
 
-        internal Dictionary<string, object> ToDictionary()
-        {
-            return new Dictionary<string, object>
-            {
-                { nameof(AutoRun), AutoRun },
-                { nameof(TerminateAfterExecution), TerminateAfterExecution },
-                { nameof(TcpWriterParameters), TcpWriterParameters },
-                { nameof(CreateXmlResultFile), CreateXmlResultFile },
-                { nameof(ResultFilePath), ResultFilePath },
-                { FrameworkPackageSettings.TestParametersDictionary, CustomParameters }
-            };
-        }
+        /// <summary>
+        /// Index of the partition to run.
+        /// Note: Partitioning is based on <see cref="Framework.NUnitAttribute"/>, so the number of test cases might be different for equally sized partitions.
+        /// </summary>
+        public int PartitionIndex { get; set; } = 0;
+
+        /// <summary>
+        /// Number of partitions to divide the tests in.
+        /// Note: Partitioning is based on <see cref="Framework.NUnitAttribute"/>, so the number of test cases might be different for equally sized partitions.
+        /// </summary>
+        public int TotalPartitionCount { get; set; } = 1;
+
+        /// <summary>
+        /// Seed to randomize the tests distribution across partitions.
+        /// Note: Partitioning is based on <see cref="Framework.NUnitAttribute"/>, so the number of test cases might be different for equally sized partitions.
+        /// </summary>
+        public int PartitionRandomizerSeed { get; set; } = 42;
     }
 }

@@ -97,13 +97,19 @@ namespace NUnit.Runner
 
             _model.Options = new TestOptions
             {
-                AutoRun = _model.Options.AutoRun,
-                CreateXmlResultFile = _model.Options.CreateXmlResultFile,
-                ResultFilePath = _model.Options.ResultFilePath,
                 TcpWriterParameters = _model.Options.TcpWriterParameters,
-                TerminateAfterExecution = _model.Options.TerminateAfterExecution,
 
-                CustomParameters = parameters
+                //convert custom paramters to native options on key match
+                AutoRun = parameters.ContainsKey(nameof(TestOptions.AutoRun)) ? bool.Parse(parameters[nameof(TestOptions.AutoRun)]) : _model.Options.AutoRun,
+                CreateXmlResultFile = parameters.ContainsKey(nameof(TestOptions.CreateXmlResultFile)) ? bool.Parse(parameters[nameof(TestOptions.CreateXmlResultFile)]) : _model.Options.CreateXmlResultFile,
+                ResultFilePath = parameters.ContainsKey(nameof(TestOptions.ResultFilePath)) ? parameters[nameof(TestOptions.ResultFilePath)] : _model.Options.ResultFilePath,
+                TerminateAfterExecution = parameters.ContainsKey(nameof(TestOptions.TerminateAfterExecution)) ? bool.Parse(parameters[nameof(TestOptions.TerminateAfterExecution)]) : _model.Options.TerminateAfterExecution,
+
+                PartitionIndex = parameters.ContainsKey(nameof(TestOptions.PartitionIndex)) ? int.Parse(parameters[nameof(TestOptions.PartitionIndex)]) : _model.Options.PartitionIndex,
+                TotalPartitionCount = parameters.ContainsKey(nameof(TestOptions.TotalPartitionCount)) ? int.Parse(parameters[nameof(TestOptions.TotalPartitionCount)]) : _model.Options.TotalPartitionCount,
+                PartitionRandomizerSeed = parameters.ContainsKey(nameof(TestOptions.PartitionRandomizerSeed)) ? int.Parse(parameters[nameof(TestOptions.PartitionRandomizerSeed)]) : _model.Options.PartitionRandomizerSeed,
+
+                CustomParameters = parameters,
             };
 
             UpdateTestAssemblies(_model.Options.ToDictionary());
